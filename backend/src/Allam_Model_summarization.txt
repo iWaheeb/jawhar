@@ -1,0 +1,143 @@
+from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+import torch
+
+# Check device
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+
+# Load model and tokenizer
+model_name = "ALLaM-AI/ALLaM-7B-Instruct-preview"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.bfloat16,
+    device_map="auto"
+)
+
+# Create generation pipeline
+generator = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer
+)
+
+# Meeting transcript
+meeting_text = """الاجتماع: مدير الشركة (السيد علي) مع رؤساء الأقسام  
+المكان: قاعة المؤتمرات الرئيسية.  
+الزمان: بعد ظهر الخميس.  
+
+السيد علي: مساء الخير، جميعًا. لنبدأ الاجتماع. اليوم لدينا عدة نقاط مهمة تحتاج إلى مناقشة.  
+
+أول نقطة: نتائج الربع الأول أقل من التوقعات. لماذا؟  
+
+محمد (المالية): Well, the main issue is the delay in collecting receivables from our major clients. This has significantly impacted our cash flow.  
+
+السيد علي: ليلى (المبيعات)، ما تعليقك؟  
+
+ليلى: بعض العملاء طلبوا تمديد فترة السداد بسبب الظروف الاقتصادية الصعبة. نحتاج إلى سياسة أكثر مرونة لتجنب فقدانهم.  
+
+السيد علي: حسنًا، هذا أمر مهم. محمد وليلى، اجتمعوا لوضع خطة لتحصيل المستحقات مع مراعاة ظروف العملاء. أريد الخطة على مكتبي بحلول نهاية الأسبوع.  
+
+محمد: Understood, sir. We’ll coordinate and get it done.  
+
+السيد علي: النقطة الثانية: تطوير المنتج الجديد. خالد (التطوير)، ما آخر التحديثات؟  
+
+خالد: الفريق يعمل على التصميم النهائي، لكننا نواجه بعض التحديات الفنية في التصنيع. Specifically, the new material we’re using is causing delays in the production line.  
+
+السيد علي: ما هي المدة المتوقعة لحل هذه التحديات؟  
+
+خالد: We need about two weeks to resolve the technical issues and get back on track.  
+
+السيد علي: حسنًا، أريد تقريرًا أسبوعيًا عن التقدم. لا يمكننا التأخير أكثر من ذلك.  
+
+خالد: Got it. I’ll make sure the team prioritizes this.  
+
+السيد علي: النقطة الثالثة: تحسين خدمة العملاء. سارة (خدمة العملاء)، ما هي الملاحظات؟  
+
+سارة: هناك شكاوى متكررة حول بطء الاستجابة عبر الهاتف. العملاء ينتظرون لفترات طويلة، وهذا يؤثر على رضاهم. نحتاج إلى زيادة عدد الموظفين في هذا القسم.  
+
+السيد علي: نعم، هذا مقترح جيد. ريم (الموارد البشرية)، ما هي إمكانية توظيف موظفين جدد؟  
+
+ريم: يمكننا بدء التوظيف فورًا، لكننا نحتاج إلى أسبوعين للإعلان والمقابلات. We’ll need to fast-track the hiring process to meet the demand.  
+
+السيد علي: ممتاز. سارة، جهزي قائمة بالمهارات المطلوبة وأرسليها لريم اليوم.  
+
+سارة: حاضر، سأرسلها قبل نهاية اليوم.  
+
+السيد علي: النقطة الأخيرة: الاستعداد للمؤتمر السنوي. أحمد (التسويق)، ما هي الخطة؟  
+
+أحمد: لدينا جدول زمني مكثف. نحتاج إلى تأكيد المتحدثين الرئيسيين وتجهيز المواد التسويقية. However, we’re facing delays in getting final approvals from some of the keynote speakers.  
+
+السيد علي: ما هي العقبات التي تواجهكم؟  
+
+أحمد: بعض المتحدثين لم يرسلوا الموافقات النهائية بعد، وهذا يعطل جدولنا الزمني.  
+
+السيد علي: حسنًا، رتبوا اجتماعًا معهم غدًا لحسم هذه الأمور. لا يمكننا التأخير أكثر من ذلك.  
+
+أحمد: Understood. I’ll arrange the meeting and update you by tomorrow afternoon.  
+
+السيد علي: جيد. الآن، لنتحدث عن شيء آخر. هناك شكوى من قسم IT بخصوص البنية التحتية. ماجد (IT)، ما هي المشكلة؟  
+
+ماجد: Yes, we’ve been experiencing frequent server downtimes, especially during peak hours. This is affecting productivity across all departments.  
+
+السيد علي: وما هو الحل المقترح؟  
+
+ماجد: We need to upgrade our servers and possibly migrate to a cloud-based system. This will require additional budget allocation.  
+
+السيد علي: حسنًا، أريد منك إعداد تقرير مفصل عن التكلفة والفوائد المتوقعة. أرسله لي بحلول نهاية الأسبوع.  
+
+ماجد: Will do, sir.  
+
+شكرًا لكم جميعًا، نلتقي الأسبوع القادم لتقييم التقدم.  
+
+الجميع: شكرًا، السيد علي.  
+
+السيد علي: قبل أن ننتهي، هل هناك أي أسئلة أو تعليقات إضافية؟  
+
+سارة: نعم، لدي سؤال بخصوص الميزانية المخصصة لتدريب الموظفين الجدد. هل يمكننا زيادة المبلغ قليلاً؟  
+
+السيد علي: ريم، ما رأيك؟  
+
+ريم: نعم، يمكننا إعادة توزيع بعض المبالغ من بنود أخرى لتغطية هذا الأمر.  
+
+السيد علي: حسنًا، قوموا بذلك وأرسلوا لي التعديلات قبل نهاية اليوم.  
+
+سارة: شكرًا، سيدي.  
+
+السيد علي: أي شيء آخر؟  
+
+الجميع: لا، شكرًا.  
+
+السيد علي: إذن، الاجتماع انتهى. شكرًا لكم جميعًا على حضوركم. نلتقي الأسبوع القادم."""
+
+# Specialized meeting summarization prompt
+prompt = f"""[INST] <<SYS>>
+أنت مساعد محترف في تلخيص محاضر الاجتماعات. قم بإنشاء ملخص منظم يحتوي على:
+1. النقاط الرئيسية التي نوقشت
+2. القرارات المتخذة
+3. المهام الموكلة مع المسؤولين عنها
+4. المواعيد النهائية
+5. القضايا العالقة
+<</SYS>>
+
+الاجتماع:
+{meeting_text}
+
+[/INST]
+الملخص المنظم:
+"""
+
+# Generate summary
+summary = generator(
+    prompt,
+    max_new_tokens=1000,
+    do_sample=True,
+    temperature=0.5,
+    top_p=0.9,
+    repetition_penalty=1.1,
+    eos_token_id=tokenizer.eos_token_id
+)
+
+# Extract and clean the summary
+response = summary[0]['generated_text'].split("الملخص المنظم:")[-1].strip()
+print("ملخص الاجتماع:\n" + response)
